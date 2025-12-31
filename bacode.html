@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self-Checkout QR Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        #reader { width: 100%; max-width: 500px; border: 2px solid #333; border-radius: 8px; overflow: hidden; }
+        #result-container { margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; display: none; text-align: center; }
+        .product-id { font-size: 1.5rem; font-weight: bold; color: #2ecc71; }
+        button { margin-top: 10px; padding: 10px 20px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h2>Product Scanner</h2>
+    
+    <div id="reader"></div>
+
+    <div id="result-container" id="result-container">
+        <p>Scanned Product ID:</p>
+        <div class="product-id" id="scanned-result"></div>
+        <button onclick="restartScanner()">Scan Next Item</button>
+    </div>
+
+    <script>
+        const scannerContainer = document.getElementById('reader');
+        const resultContainer = document.getElementById('result-container');
+        const resultText = document.getElementById('scanned-result');
+
+        // Initialize the Scanner
+        const html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", 
+            { 
+                fps: 15, 
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0 // Keeps the camera feed square
+            }
+        );
+
+        function onScanSuccess(decodedText, decodedResult) {
+            // 1. Show the ID on screen
+            resultText.innerText = decodedText;
+            resultContainer.style.display = 'block';
+            scannerContainer.style.display = 'none';
+
+            // 2. Play a subtle beep or haptic feedback (optional)
+            console.log(`Scan result: ${decodedText}`);
+
+            // 3. Stop the scanner to save battery/resources
+            html5QrcodeScanner.clear();
+        }
+
+        function onScanFailure(error) {
+            // We ignore failures to avoid console spamming
+        }
+
+        function restartScanner() {
+            // Hide result and show scanner again
+            resultContainer.style.display = 'none';
+            scannerContainer.style.display = 'block';
+            
+            // Re-render the scanner
+            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+        }
+
+        // Start the scanner on page load
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    </script>
+
+</body>
+</html>
